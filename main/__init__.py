@@ -2,7 +2,6 @@ import os
 import subprocess as sp
 import sys
 import tkinter as tk
-from PIL import ImageTk, Image
 
 from carbon.gui.button.v2 import Button
 from carbon.gui.label import Label
@@ -15,90 +14,95 @@ from main.constants import SOFTWARE_NAME, SOFTWARE_VER, TMP_DIR_PTH, SETTINGS_FI
 from main.core import core
 
 
-def deleting_intermediate_files():
-    """from previous run. execute at first just in case there's an error from previous run that leave intermediate files"""
+def startup_checkup():
+
+    ## When users force-exit (not via 'esc' key), the proxy file won't be deleted.
+    ## Also, if there's an error or something unexpected happens,
+    ## the proxy file might not be deleted either.
+    ## So, the following code makes sure the "tmp" folder stays clean in such cases.
     if os.path.isfile(PROXY_FILE_PTH):
-        printer(f'INFO: Deleting {repr(PROXY_FILE_PTH)}...')
+        printer(f'WARNING: Found proxy file from previous app usage. Deleting {repr(PROXY_FILE_PTH)}...')
         os.remove(PROXY_FILE_PTH)
-deleting_intermediate_files()
+
+    ## "tmp" folder should be clean, used for storing intermediate files
+    ## during runtime and to prevent unintended file deletions.
+    if not (
+        (len(os.listdir(TMP_DIR_PTH)) == 1)
+        and
+        (os.listdir(TMP_DIR_PTH)[0] == '.gitkeep')
+    ):
+        ## this shouldn't be raised unless bug occurs
+        raise AssertionError(f'Directory {repr(TMP_DIR_PTH)} is not clean.')
+
+startup_checkup()
 
 
-## "tmp" folder should be clean, used for storing intermediate files
-## during runtime and to prevent unintended file deletions.
-if not (
-    (len(os.listdir(TMP_DIR_PTH)) == 1)
-    and
-    (os.listdir(TMP_DIR_PTH)[0] == '.gitkeep')
-):
-    ## this shouldn't be raised unless bug occurs
-    raise AssertionError(f'Directory {repr(TMP_DIR_PTH)} is not clean.')
+def parse_settings():
 
-
-## open settings
-if len(sys.argv) != 1:
-    if sys.argv[1] == 'settings':
-        open_file(SETTINGS_FILE_PTH)
-        printer(f'INFO: settings file opened')
-    else:
-        printer(f'ERROR: Maybe you meant to run `python {SOFTWARE_NAME} settings` instead?')
-    sys.exit(1)
-
-
-## parsing the settings
-try:
-    settings = KeyCrate(
-        SETTINGS_FILE_PTH, key_is_var=True, eval_value=True,
-        only_keys=['ffmpeg', 'open_dir', 'save_dir']
-    )
-except (SyntaxError, ValueError, AssertionError) as err:
-    printer(f'ERROR: Run `python {SOFTWARE_NAME} settings` to fix this error: {err}')
-    sys.exit(1)
-
-
-## <checking ffmpeg>
-FFMPEG = settings.ffmpeg
-
-if FFMPEG != 'ffmpeg':
-    if not (os.path.isfile(FFMPEG) and os.path.splitext(FFMPEG.lower())[1] == '.exe'):
-        settings.open()
-        printer(f'ERROR: FFmpeg not recognized or not an .exe file (reconfigure in settings file): {repr(FFMPEG)}')
+    ## if users attempt to open settings
+    if len(sys.argv) != 1:
+        if sys.argv[1] == 'settings':
+            open_file(SETTINGS_FILE_PTH)
+            printer(f'INFO: settings file opened')
+        else:
+            printer(f'ERROR: Maybe you meant to run `python {SOFTWARE_NAME} settings` instead?')
         sys.exit(1)
 
-try:
-    sp.run([FFMPEG, '-version'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-    printer(f'INFO: ffmpeg is valid and usable.')
-except FileNotFoundError:
-    settings.open()
-    printer(f'ERROR: ffmpeg not found or not a recognized command (reconfigure in settings file): {repr(FFMPEG)}')
-    sys.exit(1)
-## </checking ffmpeg>
 
+    ## parsing the settings
+    try:
+        settings = KeyCrate(
+            SETTINGS_FILE_PTH, key_is_var=True, eval_value=True,
+            only_keys=['ffmpeg', 'open_dir', 'save_dir']
+        )
+    except (SyntaxError, ValueError, AssertionError) as err:
+        printer(f'ERROR: Run `python {SOFTWARE_NAME} settings` to fix this error: {err}')
+        sys.exit(1)
 
-## <validating open/save dir>
-OPEN_DIR_PTH = settings.open_dir
-if OPEN_DIR_PTH != '/':
-    if not os.path.isdir(OPEN_DIR_PTH):
-        printer(f'WARNING: the default open-folder is not a dir: {repr(OPEN_DIR_PTH)}')
-        OPEN_DIR_PTH = '/'
+    ## <checking ffmpeg>
+    ffmpeg = settings.ffmpeg
 
-SAVE_DIR_PTH = settings.save_dir
-if SAVE_DIR_PTH != '/':
-    if not os.path.isdir(SAVE_DIR_PTH):
-        printer(f'WARNING: the default save-folder is not a dir: {repr(SAVE_DIR_PTH)}')
-        SAVE_DIR_PTH = '/'
-## </validating open/save dir>
+    if ffmpeg != 'ffmpeg':
+        if not (os.path.isfile(ffmpeg) and os.path.splitext(ffmpeg.lower())[1] == '.exe'):
+            printer(f'ERROR: FFmpeg not recognized or not an .exe file (Run `python {SOFTWARE_NAME} settings` to fix): {repr(ffmpeg)}')
+            sys.exit(1)
+
+    try:
+        sp.run([ffmpeg, '-version'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+        printer(f'INFO: ffmpeg is valid and usable.')
+    except FileNotFoundError:
+        printer(f'ERROR: ffmpeg not found or not a recognized command (Run `python {SOFTWARE_NAME} settings` to fix): {repr(ffmpeg)}')
+        sys.exit(1)
+    ## </checking ffmpeg>
+
+    ## <validating open/save dir>
+    open_dir = settings.open_dir
+    if open_dir != '/':
+        if not os.path.isdir(open_dir):
+            printer(f'WARNING: the default open-folder is not a dir: {repr(open_dir)}')
+            open_dir = '/'
+
+    save_dir = settings.save_dir
+    if save_dir != '/':
+        if not os.path.isdir(save_dir):
+            printer(f'WARNING: the default save-folder is not a dir: {repr(save_dir)}')
+            save_dir = '/'
+    ## </validating open/save dir>
+
+    return ffmpeg, open_dir, save_dir
+
+SETTINGS_FFMPEG, SETTINGS_OPEN_DIR_PTH, SETTINGS_SAVE_DIR_PTH = parse_settings()
 
 
 root = tk.Tk()
 root.title(f'{SOFTWARE_NAME}-v{SOFTWARE_VER}')
 root.attributes('-fullscreen', True)
 
-mon_width = root.winfo_screenwidth()
-mon_height = root.winfo_screenheight()
+MON_W = root.winfo_screenwidth()
+MON_H = root.winfo_screenheight()
 
-page = tk.Canvas(width=mon_width, height=mon_height, bg='#111', highlightthickness=0, borderwidth=0)
+page = tk.Canvas(width=MON_W, height=MON_H, bg='#111', highlightthickness=0, borderwidth=0)
 page.place(x=0, y=0)
-
 
 Button.set_page(page)
 Slider.set_page(page)
@@ -111,18 +115,18 @@ def prepare():  # using a function to preserve variable names and avoid conflict
     
     r = 0.28  # to adjust the tools page width
     page.create_rectangle(
-        mon_width*r, -1,  # -1 instead of 0 to remove the top border
-        mon_width, mon_height,
+        MON_W*r, -1,  # -1 instead of 0 to remove the top border
+        MON_W, MON_H,
         fill='#070707', outline='#555'
     )
     
     padx = 0.05
     pady = 0.05
 
-    w = (1 - padx*2)*(mon_width - mon_width*r)
-    h = (1 - pady*2)*mon_height
-    x = mon_width*r + ((mon_width - mon_width*r) - w)*0.5  # 0.5 to make it centered
-    y = (mon_height - h)*0.5
+    w = (1 - padx*2)*(MON_W - MON_W*r)
+    h = (1 - pady*2)*MON_H
+    x = MON_W*r + ((MON_W - MON_W*r) - w)*0.5  # 0.5 to make it centered
+    y = (MON_H - h)*0.5
     
     ## uncomment to show the image bounding box
     # page.create_rectangle(x, y, x+w, y+h, outline='#f00')
@@ -243,7 +247,7 @@ def redraw_crop_grid():
 Label('software_title', 3, 3, f'{SOFTWARE_NAME}-v{SOFTWARE_VER}', 'Verdana 10', fg='#333')
 core(
     page,
-    Rt, FFMPEG, OPEN_DIR_PTH,
+    Rt, SETTINGS_FFMPEG, SETTINGS_OPEN_DIR_PTH,
     PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y,
     redraw_crop_grid
 )
