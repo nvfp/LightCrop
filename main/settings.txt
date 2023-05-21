@@ -1,0 +1,23 @@
+#-- This is a configuration file for LightCrop software.
+#-------------------------------------------------------
+
+#-- Anything starting with "#--" is a comment.
+
+#-- run `python LightCrop settings` to open the settings file
+
+
+#-- The command to invoke `ffmpeg.exe` or the full path to `ffmpeg.exe`, for example:
+#-- ffmpeg: r'C:\ffmpeg\bin\ffmpeg.exe'
+ffmpeg: 'ffmpeg'
+
+
+#-- Specify the folder where you typically open and save the image (set as default folder).
+#-- for example:
+#-- open_dir: r'C:\images\edit'
+#-- save_dir: r'C:\images\export'
+open_dir: '/'
+save_dir: '/'
+
+
+#-- the default extension when saving the output
+def_save_ext: '.jpg'
