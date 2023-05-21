@@ -203,6 +203,7 @@ class Rt:  # runtime
     ## src: https://trac.ffmpeg.org/wiki/Encode/MPEG-4#:~:text=You%20can%20select%20a%20video,the%20lowest%20quality%2Fsmallest%20filesize.
     q_v = 1
 
+
 def redraw_crop_grid():
 
     color = '#888'
@@ -243,14 +244,14 @@ def redraw_crop_grid():
     page.create_line(x, Rt.crop_tl_y, x, Rt.crop_dr_y, fill=color, tags='crop_grid')
 
 
-
 Label('software_title', 3, 3, f'{SOFTWARE_NAME}-v{SOFTWARE_VER}', 'Verdana 10', fg='#333')
 core(
     page,
-    Rt, SETTINGS_FFMPEG, SETTINGS_OPEN_DIR_PTH,
+    Rt, SETTINGS_FFMPEG, SETTINGS_OPEN_DIR_PTH, SETTINGS_SAVE_DIR_PTH,
     PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y,
     redraw_crop_grid
 )
+
 
 def left_mouse_press(e):
     Button.press_listener()
@@ -328,6 +329,12 @@ def background_fast():
 
 def exit(e):
     printer('INFO: Exiting..')
+
+    ## deleting intermediate files
+    if os.path.isfile(PROXY_FILE_PTH):
+        printer(f'INFO: Deleting {repr(PROXY_FILE_PTH)}...')
+        os.remove(PROXY_FILE_PTH)
+
     root.destroy()
 root.bind('<Escape>', exit)
 

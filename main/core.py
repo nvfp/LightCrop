@@ -111,10 +111,10 @@ def render(
     sp.call(cmd)
 
 
-def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y):
+def reshow_proxy_photo(SETTINGS_FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y):
 
     render(
-        FFMPEG,
+        SETTINGS_FFMPEG,
         Rt.input_pth,
         PROXY_FILE_PTH,
 
@@ -190,18 +190,18 @@ def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_W, PROXY_BOX_H, PR
 
 def core(
     page: tk.Canvas,
-    Rt, FFMPEG, OPEN_DIR_PTH,
+    Rt, SETTINGS_FFMPEG, SETTINGS_OPEN_DIR_PTH, SETTINGS_SAVE_DIR_PTH,
     PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y,
     redraw_crop_grid
 ):
 
     def rotate_left():
         Rt.rotate = (Rt.rotate + 1) % 4
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(SETTINGS_FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
     
     def rotate_right():
         Rt.rotate = (Rt.rotate - 1) % 4
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(SETTINGS_FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     Button(
         x=50, y=55,
@@ -220,11 +220,11 @@ def core(
 
         if Rt.do_crop:
             Button.set_label_by_id('crop', 'Crop (ON)')
-            Button.set_lock_by_tag('crop_ratio', False)
+            # Button.set_lock_by_tag('crop_ratio', False)
             redraw_crop_grid()
         else:
             Button.set_label_by_id('crop', 'Crop (OFF)')
-            Button.set_lock_by_tag('crop_ratio', True)
+            # Button.set_lock_by_tag('crop_ratio', True)
             page.delete('crop_grid')
 
     Button(
@@ -276,13 +276,13 @@ def core(
             Button.set_label_by_id(filter_gate, 'OFF')
             Slider.set_lock_by_id(filter_name, True)
         
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(SETTINGS_FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     def update_filter_value(filter_name):
         new_value = Slider.get_value_by_id(filter_name)
         setattr(Rt, filter_name, new_value)
 
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(SETTINGS_FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     BTN_W = 40  # gate buttons width
     
@@ -394,7 +394,7 @@ def core(
 
     def open_new_image():
 
-        pth = filedialog.askopenfilename(initialdir=OPEN_DIR_PTH)
+        pth = filedialog.askopenfilename(initialdir=SETTINGS_OPEN_DIR_PTH)
         if (not os.path.isfile(pth)) or (not pth.lower().endswith(ALLOWED_EXTENSIONS)):
             printer(f'WARNING: Invalid image: {repr(pth)}')
             return
@@ -404,7 +404,7 @@ def core(
         Button.set_lock_by_tag('tools', False)
         Slider.set_lock_by_tag('tools', False)
         
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(SETTINGS_FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     Button(
         x=50, y=Y+GAP*11+25,
@@ -418,6 +418,7 @@ def core(
 
         output_pth = filedialog.asksaveasfilename(
             initialfile=f'{name}_{date}{ext}',
+            initialdir=SETTINGS_SAVE_DIR_PTH,
             filetypes=(
                 ('JPEG', '*.jpg'),
                 ('JPEG', '*.jpeg'),
@@ -436,7 +437,7 @@ def core(
             return
         
         render(
-            FFMPEG,
+            SETTINGS_FFMPEG,
             Rt.input_pth,
             output_pth,
 
@@ -472,6 +473,8 @@ def core(
 
             Rt.q_v
         )
+
+        printer(f'INFO: Output is saved: {repr(output_pth)}')
 
     Button(
         x=Button.get_bounding_box_by_id('open')[2]+15,
