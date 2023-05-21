@@ -1,3 +1,4 @@
+import datetime
 import math
 import os
 import subprocess as sp
@@ -110,7 +111,7 @@ def render(
     sp.call(cmd)
 
 
-def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y):
+def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y):
 
     render(
         FFMPEG,
@@ -155,15 +156,15 @@ def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_L, PROXY_BOX_X, PR
     h = img.height
     r = w/h
 
-    if r > 1:  # landscape
-        W = round(PROXY_BOX_L)
-        H = round(PROXY_BOX_L/r)
+    if r > (PROXY_BOX_W/PROXY_BOX_H):  # landscape
+        W = round(PROXY_BOX_W)
+        H = round(W/r)
         X = PROXY_BOX_X
-        Y = PROXY_BOX_Y + (PROXY_BOX_L - H)/2
+        Y = PROXY_BOX_Y + (PROXY_BOX_H - H)/2
     else:  # portrait
-        H = round(PROXY_BOX_L)
-        W = round(PROXY_BOX_L*r)
-        X = PROXY_BOX_X + (PROXY_BOX_L - W)/2
+        H = round(PROXY_BOX_H)
+        W = round(H*r)
+        X = PROXY_BOX_X + (PROXY_BOX_W - W)/2
         Y = PROXY_BOX_Y
 
     ## rescale
@@ -172,7 +173,7 @@ def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_L, PROXY_BOX_X, PR
 
     page.delete('proxy_photo')
     page.create_image(X, Y, image=Rt.proxy_photo, anchor='nw', tags='proxy_photo')
-    page.create_rectangle(X-1, Y-1, X+W, Y+H, outline='#888', tags='proxy_photo')  # border
+    page.create_rectangle(X-1, Y-1, X+W, Y+H, outline='#555', tags='proxy_photo')  # border
 
     ## cropping needs
     Rt.crop_tl_x = X
@@ -190,17 +191,17 @@ def reshow_proxy_photo(FFMPEG, page: tk.Canvas, Rt, PROXY_BOX_L, PROXY_BOX_X, PR
 def core(
     page: tk.Canvas,
     Rt, FFMPEG, OPEN_DIR_PTH,
-    PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y,
+    PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y,
     redraw_crop_grid
 ):
 
     def rotate_left():
         Rt.rotate = (Rt.rotate + 1) % 4
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
     
     def rotate_right():
         Rt.rotate = (Rt.rotate - 1) % 4
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     Button(
         x=50, y=55,
@@ -215,9 +216,9 @@ def core(
 
     def crop_toggle():
 
-        Rt.crop_is_on = not Rt.crop_is_on
+        Rt.do_crop = not Rt.do_crop
 
-        if Rt.crop_is_on:
+        if Rt.do_crop:
             Button.set_label_by_id('crop', 'Crop (ON)')
             Button.set_lock_by_tag('crop_ratio', False)
             redraw_crop_grid()
@@ -275,13 +276,13 @@ def core(
             Button.set_label_by_id(filter_gate, 'OFF')
             Slider.set_lock_by_id(filter_name, True)
         
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     def update_filter_value(filter_name):
         new_value = Slider.get_value_by_id(filter_name)
         setattr(Rt, filter_name, new_value)
 
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     BTN_W = 40  # gate buttons width
     
@@ -403,7 +404,7 @@ def core(
         Button.set_lock_by_tag('tools', False)
         Slider.set_lock_by_tag('tools', False)
         
-        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y)
+        reshow_proxy_photo(FFMPEG, page, Rt, PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y)
 
     Button(
         x=50, y=Y+GAP*11+25,
@@ -411,9 +412,12 @@ def core(
     )
 
     def save_the_output():
-        file_path = filedialog.asksaveasfilename(
-            initialfile='test.jpg',
-            defaultextension='.jpg',
+
+        name, ext = os.path.splitext(os.path.basename(Rt.input_pth))
+        date = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
+        output_pth = filedialog.asksaveasfilename(
+            initialfile=f'{name}_{date}{ext}',
             filetypes=(
                 ('JPEG', '*.jpg'),
                 ('JPEG', '*.jpeg'),
@@ -427,10 +431,50 @@ def core(
             )
         )
 
-        render()
+        if os.path.exists(output_pth):
+            printer(f'WARNING: Unable to render the output; the file already exists: {repr(output_pth)}')
+            return
+        
+        render(
+            FFMPEG,
+            Rt.input_pth,
+            output_pth,
+
+            Rt.rotate,
+
+            Rt.do_crop,
+            Rt.crop_w,
+            Rt.crop_h,
+            Rt.crop_x,
+            Rt.crop_y,
+
+            Rt.do_contrast,
+            Rt.do_brightness,
+            Rt.do_saturation,
+            Rt.do_gamma,
+            Rt.do_gamma_r,
+            Rt.do_gamma_g,
+            Rt.do_gamma_b,
+            Rt.do_vignette,
+            Rt.do_colortemperature,
+            Rt.do_avgblur,
+
+            Rt.contrast,
+            Rt.brightness,
+            Rt.saturation,
+            Rt.gamma,
+            Rt.gamma_r,
+            Rt.gamma_g,
+            Rt.gamma_b,
+            Rt.vignette,
+            Rt.colortemperature,
+            Rt.avgblur,
+
+            Rt.q_v
+        )
 
     Button(
         x=Button.get_bounding_box_by_id('open')[2]+15,
         y=Button.get_bounding_box_by_id('open')[1],
-        fn=None, anchor='nw', label='Save', locked=True
+        fn=save_the_output, anchor='nw', label='Save', locked=True, tags='tools'
     )

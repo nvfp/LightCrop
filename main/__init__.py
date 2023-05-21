@@ -48,7 +48,7 @@ if len(sys.argv) != 1:
 try:
     settings = KeyCrate(
         SETTINGS_FILE_PTH, key_is_var=True, eval_value=True,
-        only_keys=['ffmpeg', 'open_dir', 'save_dir', 'def_save_ext']
+        only_keys=['ffmpeg', 'open_dir', 'save_dir']
     )
 except (SyntaxError, ValueError, AssertionError) as err:
     printer(f'ERROR: Run `python {SOFTWARE_NAME} settings` to fix this error: {err}')
@@ -109,25 +109,27 @@ Slider.set_page_focus([None])  # not using page-focus mechanism
 def prepare():  # using a function to preserve variable names and avoid conflicts
     """will return the variable that is going to be used"""
     
-    R = 0.28  # to adjust the tools page width
+    r = 0.28  # to adjust the tools page width
     page.create_rectangle(
-        mon_width*R, -1,  # -1 instead of 0 to remove the top border
+        mon_width*r, -1,  # -1 instead of 0 to remove the top border
         mon_width, mon_height,
         fill='#070707', outline='#555'
     )
-    PAD_X = 0.02
-    PAD_Y = 0.02
-    PROXY_BOX_W = (1 - PAD_X*2)*(mon_width - mon_width*R)
-    PROXY_BOX_H = (1 - PAD_Y*2)*mon_height
-    L = min(PROXY_BOX_W, PROXY_BOX_H)  # make it square
-    X = mon_width*R + ((mon_width - mon_width*R) - L)/2
-    Y = (mon_height - L)/2
+    
+    padx = 0.05
+    pady = 0.05
+
+    w = (1 - padx*2)*(mon_width - mon_width*r)
+    h = (1 - pady*2)*mon_height
+    x = mon_width*r + ((mon_width - mon_width*r) - w)*0.5  # 0.5 to make it centered
+    y = (mon_height - h)*0.5
+    
     ## uncomment to show the image bounding box
-    page.create_rectangle(X, Y, X+L, Y+L, outline='#f00')
+    # page.create_rectangle(x, y, x+w, y+h, outline='#f00')
 
-    return L, X, Y
+    return w, h, x, y
 
-PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y = prepare()
+PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y = prepare()
 
 
 TOLERANCE = 5  # crop TL and DR tolerance radius
@@ -147,7 +149,7 @@ class Rt:  # runtime
     rotate = 0
 
 
-    crop_is_on = False
+    do_crop = False
     crop_tl_x = None
     crop_tl_y = None
     crop_dr_x = None
@@ -161,7 +163,6 @@ class Rt:  # runtime
     crop_proxy_y = None
     crop_real_w = None
     crop_real_h = None
-    do_crop = False  # ffmpeg gate
     crop_w = None
     crop_h = None
     crop_x = None
@@ -243,7 +244,7 @@ Label('software_title', 3, 3, f'{SOFTWARE_NAME}-v{SOFTWARE_VER}', 'Verdana 10', 
 core(
     page,
     Rt, FFMPEG, OPEN_DIR_PTH,
-    PROXY_BOX_L, PROXY_BOX_X, PROXY_BOX_Y,
+    PROXY_BOX_W, PROXY_BOX_H, PROXY_BOX_X, PROXY_BOX_Y,
     redraw_crop_grid
 )
 
@@ -251,7 +252,7 @@ def left_mouse_press(e):
     Button.press_listener()
     Slider.press_listener()
 
-    if Rt.crop_is_on:
+    if Rt.do_crop:
         x, y = e.x, e.y
         if (abs(x-Rt.crop_tl_x) < TOLERANCE) and (abs(y-Rt.crop_tl_y) < TOLERANCE):  # resize using TL corner
             Rt.crop_mode = 'TL'
@@ -267,7 +268,7 @@ root.bind('<ButtonPress-1>', left_mouse_press)
 def left_mouse_hold(e):
     Slider.hold_listener()
 
-    if Rt.crop_is_on:
+    if Rt.do_crop:
         if Rt.crop_mode is not None:
             x, y = e.x, e.y
 
@@ -307,7 +308,7 @@ def left_mouse_release(e):
     Button.release_listener()
     Slider.release_listener()
 
-    if Rt.crop_is_on:
+    if Rt.do_crop:
         Rt.crop_mode = None
         Rt.crop_w = round( (Rt.crop_dr_x-Rt.crop_tl_x)*(Rt.crop_real_w/Rt.crop_proxy_w) )
         Rt.crop_h = round( (Rt.crop_dr_y-Rt.crop_tl_y)*(Rt.crop_real_h/Rt.crop_proxy_h) )

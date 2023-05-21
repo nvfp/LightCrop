@@ -17,7 +17,3 @@ ffmpeg: 'ffmpeg'
 #-- save_dir: r'C:\images\export'
 open_dir: '/'
 save_dir: '/'
-
-
-#-- the default extension when saving the output
-def_save_ext: '.jpg'
