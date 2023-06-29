@@ -1,4 +1,5 @@
 ## This is Homepage
 
-using an iamge from the 'assets/' folder:
-![nics-logo](assets/nics-logo500.jpg)
+using an image:
+
+![nics-logo](nics-logo500.jpg)

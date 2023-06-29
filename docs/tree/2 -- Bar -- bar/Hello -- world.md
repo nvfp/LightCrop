@@ -1,5 +1,5 @@
 ## Hello
 
-using an iamge from the 'assets/' folder:
+using an image again:
 
-![nics-logo](assets/nics-logo500.jpg)
+![nics-logo](nics-logo500.jpg)

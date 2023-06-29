@@ -7,7 +7,7 @@
 
 
 author: 'Nicholas Valentinus'
-color_hue: 278
+color_hue: 169
 show_credit: True
 
 
