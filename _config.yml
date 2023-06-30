@@ -1,0 +1,24 @@
+
+
+# website
+
+baseurl: /LightCrop
+url: https://nvfp.github.io/LightCrop
+
+
+# personal
+
+title: LightCrop
+author:
+  name: Nicholas Valentinus
+
+
+# internal
+
+include: [_pages, _sass, scripts]
+
+permalink: pretty
+
+sass:
+  style: compact # possible values: nested expanded compact compressed
+  sass_dir: _sass    
