@@ -2,7 +2,7 @@
 
 Lightweight image editor built with Python and FFmpeg: aiming for fast app launch, minimal dependencies, and a straightforward interface.
 
-![banner](banner.jpg)
+![banner](https://github.com/nvfp/LightCrop/blob/master/banner.jpg)
 
 
 ## Installation
