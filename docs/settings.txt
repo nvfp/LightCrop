@@ -19,4 +19,4 @@ _gh_username: 'nvfp'
 _gh_repo: 'LightCrop'
 _main_branch_name: 'master'
 
-_nics_version: '2.1.0'
+_nics_version: '2.1.1'
