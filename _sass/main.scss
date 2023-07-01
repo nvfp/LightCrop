@@ -24,20 +24,20 @@ body {
 	// keep showing the scrollbar to prevent glitching
 	overflow-y: scroll;
 
-	background-color: hsl($hue-signature, 15%, 85%);
+	background-color: hsl($hue-signature, 15%, 87%);
 
 	font-family: $font;
 
 	// main scrollbar
 	&::-webkit-scrollbar {
 		width: 7px;
-		background-color: hsl($hue-signature, 15%, 85%);
+		background-color: inherit;
 	}
 	&::-webkit-scrollbar-thumb {
-		background-color: hsl($hue-signature, 42%, 66%);
+		background-color: hsl($hue-signature, 21%, 71%);
 	}
 	&::-webkit-scrollbar-thumb:hover {
-		background-color: hsl($hue-signature, 42%, 71%);
+		background-color: hsl($hue-signature, 21%, 50%);
 	}
 }
 
@@ -50,8 +50,8 @@ main {
 	}
 
 	margin: 0 auto;
-	margin-top: 58px;
-	margin-bottom: 72px;
+	margin-top: 41px;
+	margin-bottom: 81px;
 
 	font-family: $font2;
 	font-size: 17px;
@@ -62,11 +62,10 @@ main {
 	color: hsl($hue-signature, 50%, 3%);
 
 	a {
-		text-decoration: none;
-		color: rgb(6, 132, 200);
+		color: inherit;
 	}
 	a:hover {
-		text-decoration: underline;
+		font-style: italic;
 	}
 
 	p {
@@ -81,10 +80,19 @@ main {
 		max-width: 100%;
 	}
 
-	code {
-		background-color: hsl($hue-signature, 7%, 73%);
-		padding: 2px 5px;
+	pre, code {
+		background-color: hsl($hue-signature, 7%, 77%);
 		border-radius: 5px;
 		font-family: $font3;
+	}
+	pre {
+		padding: 11px 0;
+	}
+	code {
+		padding: 2px 5px;
+	}
+
+	h1, h2 {
+		padding-top: 13px;
 	}
 }
