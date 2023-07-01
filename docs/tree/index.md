@@ -2,7 +2,7 @@
 
 Lightweight image editor built with Python and FFmpeg: aiming for fast app launch, minimal dependencies, and a straightforward interface.
 
-![banner](https://github.com/nvfp/LightCrop/blob/master/banner.jpg)
+![banner](https://raw.githubusercontent.com/nvfp/LightCrop/master/banner.jpg)
 
 
 ## Installation
@@ -36,7 +36,7 @@ Lightweight image editor built with Python and FFmpeg: aiming for fast app launc
 
 ## Troubleshoot
 
-- To report bugs/issues or ask questions, you can reach me [here](https://nvfp.github.io/contact) or open an issue/pull request.
+- To report bugs or ask questions, you can open an issue or submit a pull request.
 
 
 ## License
