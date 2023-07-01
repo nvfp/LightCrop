@@ -7,11 +7,16 @@
 
 
 author: 'Nicholas Valentinus'
-color_hue: 306
+color_hue: 194
+lowercase_the_url: True
 show_credit: True
 
 
 #-- The below variables are for NICS internal use only and should not be changed.
 
+_email: 'nvfastplease@gmail.com'
 _gh_username: 'nvfp'
 _gh_repo: 'LightCrop'
+_main_branch_name: 'master'
+
+_nics_version: '2.1.0'
