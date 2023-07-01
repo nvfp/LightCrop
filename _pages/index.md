@@ -25,8 +25,7 @@ Lightweight image editor built with Python and FFmpeg: aiming for fast app launc
 
 ## Usage
 
-- Run:    
-
+- Run:
     ```sh
     python LightCrop
     ```

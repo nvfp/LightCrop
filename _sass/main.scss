@@ -4,8 +4,10 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Caveat&family=Grandstander&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap');
 $font: 'Caveat', cursive;
 $font2: 'Grandstander', cursive;
+$font3: 'Ubuntu Mono', monospace;
 
 $font-size-mobile: 16px;
 $mobile-width: 850px;
@@ -49,6 +51,7 @@ main {
 
 	margin: 0 auto;
 	margin-top: 58px;
+	margin-bottom: 72px;
 
 	font-family: $font2;
 	font-size: 17px;
@@ -76,5 +79,12 @@ main {
 
 	img {
 		max-width: 100%;
+	}
+
+	code {
+		background-color: hsl($hue-signature, 7%, 73%);
+		padding: 2px 5px;
+		border-radius: 5px;
+		font-family: $font3;
 	}
 }
