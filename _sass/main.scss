@@ -51,4 +51,30 @@ main {
 	margin-top: 58px;
 
 	font-family: $font2;
+	font-size: 17px;
+	@media (max-width: $mobile-width) {
+		font-size: $font-size-mobile;
+	}
+
+	color: hsl($hue-signature, 50%, 3%);
+
+	a {
+		text-decoration: none;
+		color: rgb(6, 132, 200);
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+
+	p {
+		line-height: 1.5;
+	}
+
+	ul {
+		line-height: 1.5;
+	}
+
+	img {
+		max-width: 100%;
+	}
 }
